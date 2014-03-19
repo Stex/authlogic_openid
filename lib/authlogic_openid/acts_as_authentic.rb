@@ -40,7 +40,7 @@ module AuthlogicOpenid
     module Methods
       # Set up some simple validations
       def self.included(klass)
-        return if !klass.column_names.include?("openid_identifier")
+        return unless klass.column_names.include?('openid_identifier')
         
         klass.class_eval do
           validates_uniqueness_of :openid_identifier, :scope => validations_scope, :if => :using_openid?
@@ -55,6 +55,7 @@ module AuthlogicOpenid
       def openid_identifier=(value)
         write_attribute(:openid_identifier, value.blank? ? nil : OpenIdAuthentication.normalize_identifier(value))
         reset_persistence_token if openid_identifier_changed?
+        value
       rescue OpenID::DiscoveryFailure => e
         @openid_error = e.message
       end
@@ -69,12 +70,15 @@ module AuthlogicOpenid
       #
       # Another advantage of taking this approach is that we can set fields from their OpenID profile before we save the record,
       # if their OpenID provider supports it.
-      def save(perform_validation = true, &block)
-        return false if perform_validation && block_given? && authenticate_with_openid? && !authenticate_with_openid
-        result = super
-        yield(result) if block_given?
-        result
-      end
+      #
+      # @todo: This is not compatible with Rails 4!
+      #
+      # def save(perform_validation = true, &block)
+      #   return false if perform_validation && block_given? && authenticate_with_openid? && !authenticate_with_openid
+      #   result = super
+      #   yield(result) if block_given?
+      #   result
+      # end
       
       private
         def authenticate_with_openid
