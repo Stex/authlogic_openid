@@ -35,6 +35,10 @@ module AuthlogicOpenid
         rw_config(:openid_optional_fields, value, [])
       end
       alias_method :openid_optional_fields=, :openid_optional_fields
+
+      def always_validate_password=(bool)
+        rw_config(:always_validate_password, bool, false)
+      end
     end
     
     module Methods
@@ -167,7 +171,7 @@ module AuthlogicOpenid
         end
         
         def validate_password_with_openid?
-          !using_openid? && require_password?
+          (!using_openid? || User.send(:rw_config, :always_validate_password, nil, false)) && require_password?
         end
     end
   end
