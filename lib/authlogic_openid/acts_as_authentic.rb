@@ -53,7 +53,7 @@ module AuthlogicOpenid
       
       # Set the openid_identifier field and also resets the persistence_token if this value changes.
       def openid_identifier=(value)
-        write_attribute(:openid_identifier, value.blank? ? nil : OpenID.normalize_url(value))
+        write_attribute(:openid_identifier, value.blank? ? nil : OpenIdAuthentication.normalize_identifier(value))
         reset_persistence_token if openid_identifier_changed?
       rescue OpenID::DiscoveryFailure => e
         @openid_error = e.message
